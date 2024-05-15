@@ -1,0 +1,42 @@
+.preflight-button,
+.preflight-button::before,
+.preflight-button::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: theme("borderColor.DEFAULT", currentColor); /* 2 */
+  --tw-content: "";
+}
+
+.preflight-button {
+  font-family: inherit; /* 1 */
+  font-feature-settings: inherit; /* 1 */
+  font-variation-settings: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  font-weight: inherit; /* 1 */
+  line-height: inherit; /* 1 */
+  letter-spacing: inherit; /* 1 */
+  color: inherit; /* 1 */
+  margin: 0; /* 2 */
+  padding: 0; /* 3 */
+  text-transform: none;
+  background-color: transparent;
+  background-image: none;
+  cursor: pointer;
+}
+
+.btn {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-radius: 0.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #3b82f6;
+  opacity: 0.9;
+}
+
+.btn:hover {
+  opacity: 1;
+}
