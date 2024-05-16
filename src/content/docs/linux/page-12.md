@@ -1,7 +1,7 @@
 ---
 title: "Arrays & Functions"
 slug: "arrays-and-functions"
-siderbar:
+sidebar:
   order: 12
 ---
 

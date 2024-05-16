@@ -190,3 +190,31 @@ ubuntu   82499  0.0  0.0   9080  2416 pts/0    S+   00:08   0:00 grep --color=au
 ```
 
 > we take the stdout from ps aux, and run that as the stdin to grep. grep finds the lines it needs and outputs that to the stdout.
+
+**Example**
+
+```bash
+# list IP addresses from the access log
+sudo cat /var/log/httpd/access_log | awk '{print $1}'
+```
+
+```bash
+# list 404 GET requests with the page and IP address
+sudo cat /var/log/httpd/access_log | awk '/404/{$(NF+1)=$1;print}' | awk -FGET '{print $2}' | awk '{print $1, $NF}' > 404.txt
+```
+
+- first `awk` matches `/404/` pattern and defines a new column with the value set to the first column (ip address).
+
+- second `awk` declares a custom separate `GET` and takes the data in the second column (everything after the word `GET`)
+
+- third `awk` prints the first column (page) and the last column, $NF (ip address) and redirects it to `404.txt`
+
+```bash
+awk '{count[$1" "$2]++} END {for (key in count) print key, count[key]}' 404.txt | sort -k3,3nr >  aggregated_404.txt
+```
+
+- `count[$1" "$2]++ creates a variable named count that uses the line as the key and the number of occurrences in the file as the value.
+
+- We then loop over each key in count and print the line with its number of occurrences
+
+- Then use the `sort` command with `-k3,3` to specify the third column (the count) as the sorting key. `-nr` stands for numeric and reverse order.

@@ -1,6 +1,6 @@
 ---
-title: "Environments & Processes"
-slug: "environments-and-processes"
+title: "Environments, Path, & Variables"
+slug: "environments-path-and-variables"
 sidebar:
   order: 7
 ---
@@ -51,123 +51,149 @@ if [ -f ~/.bashrc ]; then
 fi
 ```
 
-## Processes
-
-Everything running in Linux is a process
+## Path & Variables
 
 ```bash
-ps
+echo $PATH
 ```
 
 ```
-PID TTY          TIME CMD
-41737 pts/1    00:00:00 bash
-42412 pts/1    00:00:00 ps
+/home/ubuntu/.local/share/pnpm:/home/ubuntu/.nvm/versions/node/v20.12.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
 ```
 
-> processes the current user are currently running (as opposed to **ps aux**)
+> Locations on your computer where your programs are.
+
+When we run `node` it goes through each of these locations and checks for anything called `node`.
 
 ```bash
-sleep 10
+cd ~
+mkdir my_bin
+mv gen_files.sh my_bin/gen_files
+PATH=~/my_bin:$PATH
+echo $PATH
+gen_files
 ```
 
-> waits for 10 seconds
+> Here we create a directory called `my_bin` and place our executable files. We then se a PATH variable to `my_bin:$PATH` (for this session only) now when we run `gen_files` it will execute without a direct path (i.e. `./gen_files`) since it now lives in our PATH variables set.
 
-**example**
+**Note**
+Adding executables to our path variables also gives us autocomplete.
 
 ```bash
-sleep 1000
+# this is a comment
+touch file{1...10}.txt
 ```
 
-<kbd>CTRL</kbd> + <kbd>Z</kbd>
-
-```
-^Z
-```
-
-> this will stop the process
+> We can create comments in our script files by using the `#` symbol.
 
 ```bash
-jobs
+#! /bin/bash
+
+DESTINATION=~/temp
+FILE_PREFIX=file
+
+mkdir -p $DESTINATION
+cd $DESTINATION
+
+touch ${FILE_PREFIX}{1..10}.txt
+echo done
 ```
 
-```
-[1]+  Stopped                 sleep 1000
-```
+> Here we create variables called `DESTINATION` and `FILE_PREFIX` that we use throughout our code. We need to use `{}` around our variable when it is ambigious to what the curly braces `{1..10}` refers to.
+
+**Note**
+We can always wrap our variables with `{}` if desired.
+
+**Useful Shell Variables**
+
+- $0 is always the program name
+- $# is the number of arguments
+- $@ is the list of all arguments that can be iterated
+- $1 is the first argument, $2 is the second argument, and so on
+- $? is the status of the previous command
+- ?? is the PID of the current process
+
+### printenv
+
+We can use the `printenv` command to print all the env variables in our system.
 
 ```bash
-bg 1
+printenv
 ```
 
-> this will resume the stopped process [1] in the background (can also use **fg** for foreground)
+```
+SHELL=/bin/bash
+HISTCONTROL=ignoredups
+SYSTEMD_COLORS=false
+...
+```
 
-**Note**: this is a useful for having process switch between running in the background and foreground
+## Variables
+
+### Create a variable
 
 ```bash
-jobs -l
+name=Brian
+echo "My name is $name"
 ```
 
-> lists jobs with PID
+```
+My name is Brian
+```
 
-## Exit Codes & Process Operators
+**Note** These variables will be deleted when the user logs out and logs in again.
+
+### Persist variables
+
+We can persist variables by adding them our `.bashrc` or `.bash_profile` file in our home directory.
 
 ```bash
-date
+echo 'export envname=Brian' >> ~/.bash_profile
 ```
 
-```
-Fri May  3 04:09:54 AM EDT 2024
-```
-
-> prints the current date
+**Note** When we edit our `.bash_profile` or `.bashrc` we must either log out and log in again to sync changes or execute the command `source ~/.bash_profile`
 
 ```bash
-echo $?
+echo $envname
 ```
 
-> prints exit code for the last command
+```
+Brian
+```
 
-**Exit codes**: 0 means it finished successfully, otherwise it did not finish successfully
+### unsert
 
-**Common exit codes**
-
-- 0: means it was successful. Anything other than 0 means it failed
-- 1: a good general catch-all "there was an error"
-- 2: a bash internal error, meaning you or the program tried to use bash in an incorrect way
-- 126: Either you don't have permission or the file isn't executable
-- 127: Command not found
-- 128: The exit command itself had a problem, usually that you provided a non-integer exit code to it
-- 130: You ended the program with <kbd>CTRL</kbd> + <kbd>C</kbd>
-- 137: You ended the program with SIGKILL
-- 255: Out-of-bounds, you tried to exit with a code larger than 255
-
-**Example**: Operators
+We can remove variables using the `unset` command.
 
 ```bash
-touch status.txt && date >> status.txt && uptime >> status.txt
+unset name
 ```
 
-> if `touch status.txt` returns an exit code of 0 then `date >> status.txt` will run, ...
+### substitution
 
-```bash
-false || echo hi
-```
-
-```
-hi
-```
-
-> right side of the or (||) operator will run if the left side fails.
+We can use either the backticks (\`\`) or `$()` syntax to perfeorm command in a subshell (substitution).
 
 ```bash
-true ; false ; echo hi
+echo "today's date is $(date)"
+echo "today's data is `data`"
 ```
 
-```
-hi
-```
+## Shell Parameter Expansion
 
-> the semicolon (;) allows to run commands sequentially regarless of if the previous command fails or not.
+Shell parameter expansion is a feature of the Linux shell that allows you to manipulate the values of shell variables and perform operations on them automatically.
+
+**Examples**
+
+```bash
+myvar="Hello World"
+echo ${myvar} # Hello World
+echo ${myvar/Hello/Goodbye} # Goodbye World
+echo ${myvar^^} # HELLO WORLD
+echo ${myvar,,} # hello world
+echo ${myvar:0:3} # hel
+echo ${#myvar} # 5
+echo ${myvar/h/b} # bello
+```
 
 ## Subcommands
 

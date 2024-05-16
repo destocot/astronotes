@@ -1,7 +1,7 @@
 ---
 title: "Conditionals & Loops"
 slug: "conditionals-and-loops"
-siderbar:
+sidebar:
   order: 11
 ---
 

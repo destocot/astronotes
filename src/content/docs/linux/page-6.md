@@ -1,7 +1,7 @@
 ---
 title: "Users & Permissions"
 slug: "users-and-permissions"
-siderbar:
+sidebar:
   order: 6
 ---
 

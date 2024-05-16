@@ -121,6 +121,8 @@ mv original renamed-directory
 
 > move (rename) files / folder
 
+## Disk Space
+
 ```bash
 tar -cf archive.tar textfile.txt folder1
 ```
@@ -138,6 +140,14 @@ tar -xzf archive.tar.gz -C destination-folder
 ```
 
 > extracts contents to folder (folder must exist)
+
+### gzip
+
+The `gzip` command compresses a file to use less disk space, the resulting file uses the extension `.gz`
+
+### gunzip
+
+The `gunzip` command uncompresses a `.gz` file
 
 ## Wildcards & Replacements
 

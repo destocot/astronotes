@@ -1,0 +1,426 @@
+---
+title: "Monitoring & Processes"
+slug: "monitoring-and-processes"
+sidebar:
+  order: 14
+---
+
+## Processes
+
+Everything running in Linux is a process. Each Linux process is assigned a unique **PID** (process identification number).
+
+Maximum number of process in Linux exist called **32768**
+
+Maximum time slice that can be given to a process in Linux is **600ms**
+
+```bash
+ps
+```
+
+```
+PID TTY          TIME CMD
+41737 pts/1    00:00:00 bash
+42412 pts/1    00:00:00 ps
+```
+
+> processes the current user are currently running (as opposed to **ps aux**)
+
+```bash title="show processes with the PPID (Parent Process ID)"
+ps -ef
+```
+
+```bash title="waits for 10 seconds"
+sleep 10
+```
+
+**example**
+
+```bash
+sleep 1000
+```
+
+<kbd>CTRL</kbd> + <kbd>Z</kbd>
+
+```
+^Z
+```
+
+> this will stop the process
+
+```bash title="display stopped and pending processes"
+jobs
+```
+
+```
+[1]+  Stopped                 sleep 1000
+```
+
+```bash title="start stopped and pending processes in the background"
+bg
+```
+
+```bash title="start stoppd and pending processes in the foreground"
+fg
+```
+
+```bash title="nohup"
+# nohup allows you to continue a process even after the shell session
+# has been terminated
+nohup sleep 100 &
+```
+
+```bash
+bg 1
+```
+
+> this will resume the stopped process [1] in the background (can also use **fg** for foreground)
+
+**Note**: this is a useful for having process switch between running in the background and foreground
+
+```bash title="list jobs with PID"
+jobs -l
+```
+
+### Types of Processes
+
+There are two types of processes:
+
+1. Foreground Processes - by default, all the processes are running in the foregorund. When a process is run in foreground, no other process can be run on the same terminal until the process is finished or killed.
+
+2. Background Processes - adding `&` to a foreground command makes it a background process. A background process runs on its own without input from the keyboard (stdin) and waits for input from the keyboard.
+
+- If a program executing in background attempts to read from STDIN it's execution is suspended.
+- `fg` command is used to bring the background process to foreground
+
+#### Zombie Processes
+
+When a processs is killed, a ps listing may still show the process with a **Z** state. This is a zombie or defunt process.
+
+#### Orphan Processes
+
+An orphan process is a user proces, which is having init (process id -1) as a parent.
+
+#### Daemon Processes
+
+These are special types of background processes that start at system startup and keep running forever as a service.
+
+Almost all daemons have names that end with the letter "d" (i.e. `httpd`).
+
+Linux often starts daemons at boot time. Shell scripts stored in `/etc/init.d` directory are used to start and stop daemons.
+
+### Process Creation
+
+There are two conventional ways used for creating a new process in Linux:
+
+- Using The `System()` Function - this method is relatively simple, however, it's inefficient and has significantly certain security risks.
+
+- Using `fork()` and `exec()` Function - this technique is a little advanced but offers great flexibility, speed, together with security.
+
+Return value of `fork()` can be represented as `-1,>0,0`
+
+### Identify Processes
+
+Because Linux is a multi-user system, each instance of a program must be uniquely identified by the kernel.
+
+- **Parent Processes** (PPID) - these are processes that create other procsses during run-time.
+
+- **Child Processes** (PID) - these processes are created by other processes during run-time.
+
+### Init Processes
+
+- The init process always has process ID Of 1. It functions as an adoptive parent for all orphaned processes.
+
+```bash title="pidof command to find the ID of a process
+pidof systemd
+```
+
+```
+6224 1
+```
+
+```bash title="process ID and parent process ID of the current shell"
+echo $$
+echo $PPID
+```
+
+```
+6478
+6277
+```
+
+Run process with priority
+
+```bash
+nice -n 5 sleep 100
+```
+
+> The top priority is -20 but as it may affect system processes, we have used priority 5.
+
+Get the list of all the running processes on your Linux machine.
+
+```bash
+top
+```
+
+### Select and sort processes
+
+#### ps
+
+```bash
+ps
+```
+
+ps (process statuses) command produces a snapshot of all running processes. Therefore, unlike the Windows task manager, the results are **static**.
+
+- When the command is used without any addiitonal argument or otpion, it will return a list of running processes along with four crucial columns: the **PID**, the terminal name (**TTY**), running time (**TIME**), and the name of the command that launches the process (**CMD**).
+
+You can use **ps aux** to get more in-depth informatiom about your running processes.
+
+```bash
+ps aux
+```
+
+- **a** option - outputs all running proccess for all users in the system.
+- **u** option - provides additional information like memory and CPU usage percentage, the process state code, and the owner of the procsses.
+- **x** option - lists all processes not execute from the terminal (i.e. daemons)
+
+The user ID of the root user is **0**.
+
+By default, ps sorts by process IDS (PIDs) in ascending order.
+
+```bash
+ps aux --sort pid
+ps aux --sort -pid
+ps aux --sort +pid
+```
+
+Think of `-` as meaning descending values (largest first) and `+` as meaning ascending values (smallest first).
+
+To sort by any other column, you need to use the column name
+
+```bash title="sorting by memory descending"
+ps aux --sort -pmem
+```
+
+We can see child processes under their parent processes.
+
+```bash title="list processes in a hierarchical view
+ps -axjf
+```
+
+**STAT** column
+
+1. Status **R** means running.
+1. Status **S** means sleeping.
+1. Status **Z** means zombie.
+
+#### top
+
+The top command is used to discover resource hungry processes. This command will sort by CPU usage.
+
+```bash
+top
+```
+
+Unlike ps, the output of the top command is updated periodically (real-time updates for CPU usage and running processes).
+
+Once the shell returns the list, we can interact with it
+
+<kbd>K</kbd> - kills a process
+
+<kbd>M</kbd> - sorts the list be memory usage
+
+<kbd>N</kbd> - sorts the list by PID
+
+<kbd>r</kbd> - changes the priority of a process
+
+<kbd>h</kbd> - displays the help window
+
+<kbd>z</kbd> - displays running processes in colors
+
+<kbd>d</kbd> - changes the refresh time interval
+
+<kbd>c</kbd> - displays the absolute path of a process
+
+<kbd>CTRL</kbd> + <kbd>C</kbd> or <kbd>q</kbd> - stops the top command
+
+#### htop
+
+Shows the real-time result and is equipped with user-friendly features
+
+```bash
+htop
+```
+
+Keyboard Shortcuts
+
+<kbd>F9</kbd> - kills a process
+
+<kbd>F8</kbd> - increase the priority of a process
+
+<kbd>F7</kbd> - decrease the priority of a process
+
+<kbd>F6</kbd> - set processes by any column
+
+<kbd>F5</kbd> - display processes in tree view
+
+<kbd>F4</kbd> - filter the process by name
+
+<kbd>F3</kbd> - search for a process
+
+<kbd>F2</kbd> - open htop setup
+
+<kbd>F1</kbd> - display the help menu
+
+## Renice command
+
+You can change the scheduling priority of a running process to a value lower or higher than the base scheduling priority using the **renice** command.
+
+```bash
+renice Priority -p ProcessID
+```
+
+> Priority is a number in the range of `-20` to `20`. The **higher** the number, the lower the priority. If you use **zero**, the process wil run at its base scheduling priority.
+
+> ProcessID is the PID for which you want to change the priority.
+
+## States of Processes in Linux
+
+**Running** - it is the current proces in the system or it's ready to run (waiting to be assigned to one of the CPUs)
+
+**Waiting** - process is waiting for an event to occur or for a system resource.
+
+- interruptible waiting process - can be interrupted by signals
+- uninterruptible waiting process - are waiting directly on hardware conditions and cannot be interrupted by any event/signal.
+
+**Stopped** - process has been stopped, usually by receiving a signal.
+
+**Zombie** - process is dead, it has been halted but it still has an entry in the process table.
+
+## Process Monitoring
+
+### strace
+
+The `strace` command displays the system's calls and signal
+
+```bash
+strace -p <pid> # shows information about the process
+```
+
+## System Monitoring
+
+- `ac` - user activity
+
+- `systemctl` - system and service manager; can be used to shutdown or reboot the system
+
+- `vmstat` - virtual memory monitor
+
+- `iostat` - input/output monitor
+
+- `mpstat` - logical processor monitor
+
+## Exit Codes & Process Operators
+
+```bash
+date
+```
+
+```
+Fri May  3 04:09:54 AM EDT 2024
+```
+
+> prints the current date
+
+```bash
+echo $?
+```
+
+> prints exit code for the last command
+
+**Exit codes**: 0 means it finished successfully, otherwise it did not finish successfully
+
+**Common exit codes**
+
+- 0: means it was successful. Anything other than 0 means it failed
+- 1: a good general catch-all "there was an error"
+- 2: a bash internal error, meaning you or the program tried to use bash in an incorrect way
+- 126: Either you don't have permission or the file isn't executable
+- 127: Command not found
+- 128: The exit command itself had a problem, usually that you provided a non-integer exit code to it
+- 130: You ended the program with <kbd>CTRL</kbd> + <kbd>C</kbd>
+- 137: You ended the program with SIGKILL
+- 255: Out-of-bounds, you tried to exit with a code larger than 255
+
+**Example**: Operators
+
+```bash
+touch status.txt && date >> status.txt && uptime >> status.txt
+```
+
+> if `touch status.txt` returns an exit code of 0 then `date >> status.txt` will run, ...
+
+```bash
+false || echo hi
+```
+
+```
+hi
+```
+
+> right side of the or (||) operator will run if the left side fails.
+
+```bash
+true ; false ; echo hi
+```
+
+```
+hi
+```
+
+> the semicolon (;) allows to run commands sequentially regarless of if the previous command fails or not.
+
+## Screen
+
+`screen` is a terminal multiplexer that allows you to run multiple terminal sessions within a single terminal window or SSH session.
+
+**Example**
+
+```bash
+# start screen session
+screen
+```
+
+```bash
+# start print loop on screen 1
+while true; do echo "screen 1..."; sleep 5; done
+```
+
+> To exit a screen press <kbd>CTRL</kbd> + <kbd>a</kbd>, then <kbd>d</kbd>
+
+```bash
+# repeat print loop on screen 2
+screen
+while true; do echo "screen 2..."; sleep 5; done
+```
+
+```bash
+# list screens
+screen -list
+```
+
+```
+There are screens on:
+        12372.pts-0.ip-172-31-21-67     (Detached)
+        12301.pts-0.ip-172-31-21-67     (Detached)
+2 Sockets in /run/screen/S-ec2-user.
+```
+
+```bash
+# enter screen by pid
+screen -r 12372
+```
+
+```bash
+# close out a screen session
+screen -X -S 12372 quit
+```

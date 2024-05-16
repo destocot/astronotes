@@ -1,7 +1,7 @@
 ---
 title: "Automation & Customization"
 slug: "automation-and-customization"
-siderbar:
+sidebar:
   order: 13
 ---
 
@@ -72,13 +72,47 @@ If we wanted it to run every half hour on Sundays, we could do:
 @annually <command>
 ```
 
-**Example**
+**Examples**
 
-```bash
+```bash title="run make_new_file script every two minutes"
 */2 * * * * /home/ubuntu/my_bin/make_new_file
 ```
 
-> This will run the make_new_file script every two minutes while the PC is on.
+```bash title="Set up the script to run Monday–Friday at 6am."
+0 6 * * 1-5 /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run at 6pm every Friday."
+0 18 * * 5 /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run every half hour from 9–4 on Monday, Wednesday, and Friday."
+0,30 9-16 * * 1,3,5 /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run every other hour every day."
+0 */2 * * * /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run on May 4th at midday."
+0 12 4 5 * /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run on the 1st of every month at 6:25am."
+25 6 1 * * /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run every 20 minutes every Tuesday between 10am and 2pm."
+*/20 10-14 * * 2 /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run the 1st of every other month on the hour."
+0 * 1 */2 * /home/ubuntu/my_bin/make_new_file
+```
+
+```bash title="Set up the script to run at 6am and 8am on Saturday and Sunday."
+0 6,8 * * 6,0 /home/ubuntu/my_bin/make_new_file
+```
 
 **Reference**
 [crontab guru](https://crontab.guru/)
@@ -107,6 +141,11 @@ If we wanted it to run every half hour on Sundays, we could do:
 
 - word count
 - count the number of lines, words, and characters
+
+```bash
+# the number of connected users
+who | wc -l
+```
 
 ## Customize Your Shell
 

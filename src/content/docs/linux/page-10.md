@@ -1,23 +1,17 @@
 ---
 title: "Shell Scripts"
 slug: "shell-scripts"
-siderbar:
+sidebar:
   order: 10
 ---
 
 ## Writing Scripts
 
-_gen_files.sh_
-
-```bash
+```bash title="gen_files.sh"
 mkdir -p ~/temp
 cd ~/temp
 touch file{1..10}.txt
 echo done
-```
-
-```
-done
 ```
 
 > We can run the follow script file with either `bash gen_files.sh`, `source gen_files.sh`, or `. gen_files.sh`. The `-p` flag indicates that if the directory already exists do not error out.
@@ -72,68 +66,6 @@ chmod +x ./gen_node
 ```
 this is running from node.js
 ```
-
-## Path & Variables
-
-```bash
-echo $PATH
-```
-
-```
-/home/ubuntu/.local/share/pnpm:/home/ubuntu/.nvm/versions/node/v20.12.2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
-```
-
-> Locations on your computer where your programs are.
-
-When we run `node` it goes through each of these locations and checks for anything called `node`.
-
-```bash
-cd ~
-mkdir my_bin
-mv gen_files.sh my_bin/gen_files
-PATH=~/my_bin:$PATH
-echo $PATH
-gen_files
-```
-
-> Here we create a directory called `my_bin` and place our executable files. We then se a PATH variable to `my_bin:$PATH` (for this session only) now when we run `gen_files` it will execute without a direct path (i.e. `./gen_files`) since it now lives in our PATH variables set.
-
-**Note**
-Adding executables to our path variables also gives us autocomplete.
-
-```
-# this is a comment
-touch file{1...10}.txt
-```
-
-> We can create comments in our script files by using the `#` symbol.
-
-```
-#! /bin/bash
-
-DESTINATION=~/temp
-FILE_PREFIX=file
-
-mkdir -p $DESTINATION
-cd $DESTINATION
-
-touch ${FILE_PREFIX}{1..10}.txt
-echo done
-```
-
-> Here we create variables called `DESTINATION` and `FILE_PREFIX` that we use throughout our code. We need to use `{}` around our variable when it is ambigious to what the curly braces `{1..10}` refers to.
-
-**Note**
-We can always wrap our variables with `{}` if desired.
-
-**Useful Shell Variables**
-
-- $0 is always the program name
-- $# is the number of arguments
-- $@ is the list of all arguments that can be iterated
-- $1 is the first argument, $2 is the second argument, and so on
-- $? is the status of the previous command
-- ?? is the PID of the current process
 
 ## Arguments
 

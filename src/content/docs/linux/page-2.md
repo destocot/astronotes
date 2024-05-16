@@ -76,6 +76,83 @@ which ls
 - . (dot) : the current directory
 - .. (two dots) : the parent of the current directory
 
+### disk free (df)
+
+the disk free command `df` displays the ammount of disk space available on the file system
+
+```bash
+df
+```
+
+-h - This provides the disk space usage in a more readable format with size suffixes.
+
+-T - This shows the disk space usage along with the type of file system.
+
+-i - This provides information about the number of inodes (index nodes).
+
+### disk usage (du)
+
+the disk usage command `du` estimates file space usage
+
+```bash
+du
+```
+
+-h - This provides the disk space usage
+
+-sh - This shows a summary of the total disk usage of the current directory in a human-readable format.
+
+-ah - This lists the disk usage of all files and directories in a human-readable format.
+
+-ch - This gives a total disk usage for the listed directories/files in a human-readable format.
+
+```bash
+# restricts du to show disk usage up to one level of subdirectories
+du -h --max-depth=1
+```
+
+### ulimit
+
+`ulimit` is a command used to set or display user-level resource limits for the shell.
+
+```bash
+ulimit -a
+```
+
+> display all current limits
+
+### script
+
+makes a typescript of everything on your terminal session. the terminal data are stored in raw form to the log file and information about timing to another (optional) structured log file.
+
+```bash
+script session.log
+```
+
+> start recording terminal session, default file will be `typescript`. To
+> end recording type `exit` or press <kbd>CTRL</kbd> + <kbd>D</kbd>
+
+### lpr
+
+The `lpr` command in Linux is used to send files to the printer. It stands for "line printer"
+
+```bash
+lpr filename
+```
+
+> This sends the file named filename to the default printer.
+
+### stty
+
+The `stty` command in Linux is used to change and print terminal line settings. It stands for "set terminal type" and allows you to control various terminal I/O settings.
+
+```bash
+stty -a
+
+```
+
+> This displays all current terminal settings.
+
 ## Flags
 
 ```bash
@@ -324,7 +401,7 @@ A signal is a notification that you send to a program.
 - <kbd>CTRL</kbd> + <kbd>C</kbd> - SIGINT
   - you're telling it to **int**errupt what it's doing and stop.
 - <kbd>CTRL</kbd> + <kbd>D</kbd> - SIGQUIT
-  - many programs won't respond to SIGQUITE but bash itself will. You can also type `exit`.
+  - many programs won't respond to SIGQUIT but bash itself will. You can also type `exit`.
 - SIGTERM - there is no shortcut for SIGTERM
   - if you use the `kill` program to kll another program, the way it does that is by sending a SIFTERM to the program.
 - SIGKILL - if you want a program to stop and stop **now**, you can do `kill -9` or (`kill -SIGKILL`)
@@ -344,4 +421,13 @@ sleep 100 &
 kill -SIGKILL 42838
 ```
 
-> creates a sleep process running in the background for 100 seconds, to end the process earily we grab its **PID** and kill it with the signall **-SIGKILL**
+> creates a sleep process running in the background for 100 seconds, to end the process earily we grab its **PID** and kill it with the signal **-SIGKILL**
+
+### Key Mappings
+
+You can view the key mapping that sends specific signals using the "stty -a" command
+
+```bash
+stty -a
+stty -a | grep intr
+```
