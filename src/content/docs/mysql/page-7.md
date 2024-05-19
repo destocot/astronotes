@@ -261,6 +261,23 @@ FROM books ORDER BY title LIMIT 9001;
 19 rows in set (0.00 sec)
 ```
 
+**Note** We can utilize `ORDER BY` and `LIMIT` to retrieve a unique aggregation value.
+
+```sql
+SELECT title, pages FROM books ORDER BY pages DESC LIMIT 1;
+```
+
+```
++-------------------------------------------+-------+
+| title                                     | pages |
++-------------------------------------------+-------+
+| The Amazing Adventures of Kavalier & Clay |   634 |
++-------------------------------------------+-------+
+1 row in set (0.00 sec)
+```
+
+> The query above is not ideal if there were multiple books whose page count was `634` (see [subqueries](/aggregate-functions/#subqueries))
+
 ## LIKE
 
 The `LIKE` operator allows us to perform more dynamic searches with our data, as apposed to the `WHERE` clauses which matches exacty values;
