@@ -346,8 +346,34 @@ GROUP BY released_year;
 16 rows in set (0.00 sec)
 ```
 
-## Aggregate Functions Doc
+**Reference** [Aggregate Function Descriptions](https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html)
 
+### Summary Exercise
+
+Obtain the count of books and the average page count per book, grouped by release year. The results should be ordered in ascending order by release year.
+
+```sql
+SELECT
+  released_year AS year,
+  COUNT(*) AS "#_books",
+  AVG(pages) AS "avg_pages"
+FROM books
+GROUP BY year
+ORDER BY year;
 ```
 
+```
++------+---------+-----------+
+| year | #_books | avg_pages |
++------+---------+-----------+
+| ...                        |
+| 1996 |       1 |  198.0000 |
+| 2000 |       1 |  634.0000 |
+| 2001 |       3 |  443.3333 |
+| 2003 |       2 |  249.5000 |
+| 2004 |       1 |  329.0000 |
+| 2013 |       1 |  504.0000 |
+| ...                        |
++------+---------+-----------+
+16 rows in set (0.00 sec)
 ```

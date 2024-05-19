@@ -131,7 +131,7 @@ WHERE cat_id = age;
 
 ```sql
 -- return cat_id and name with cat_id aliased as id
-SELECT cat_id as id, name from cats
+SELECT cat_id AS id, name from cats
 ```
 
 ```
@@ -147,6 +147,13 @@ SELECT cat_id as id, name from cats
 |  7 | Jackson        |
 +----+----------------+
 7 rows in set (0.00 sec)
+```
+
+**Note** The `AS` keyword is not required to create an alias
+
+```sql
+-- is equivalent to the query above
+SELECT cat_id id FROM cats
 ```
 
 ## UPDATE
