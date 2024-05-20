@@ -110,6 +110,33 @@ brian ALL=(ALL:ALL) NOPASSWD:ALL
 
 > add the user to sudoers
 
+## User Management
+
+```bash
+# Delete a user
+sudo userdel -r 'username'
+```
+
+```bash
+# Remove user from a user group
+sudo deluser USER GROUPNAME
+```
+
+```bash
+# Gives information on all logged in users
+finger
+```
+
+```bash
+# Gives information of a particular user
+Finger username
+```
+
+```bash
+# view all user groups
+cat /etc/group
+```
+
 ## Group Permissions
 
 Run `ls -l` Let's discuss the `-rw-rw-r--` stuff you see in the first column. These are the permissions for each file and directory in that folder. Let's break it down one-by-one. It's not imperative you memorize this, just know enough to what you're looking at.
