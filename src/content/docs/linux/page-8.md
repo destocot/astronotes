@@ -63,6 +63,13 @@ ssh brian@<the ip address you just got from ifconfig on the other machine>
 
 > connecting to a remote desktop
 
+## Security
+
+```bash
+# shows account aging information
+chage -l <user>
+```
+
 ## SFTP
 
 Sometimes you need to transfer files between two cx omputers. SFTP (secure file transfer protocol).

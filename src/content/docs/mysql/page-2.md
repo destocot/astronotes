@@ -114,6 +114,10 @@ Has a max (signed) value of 2147483647, signed meaning that we can have as low a
 
 **VARCHAR** A Variable-Length String
 
+### Continue
+
+[Revisiting Data Types](/revisiting-data-types)
+
 ## Creating Tables
 
 ```sql
