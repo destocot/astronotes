@@ -615,3 +615,58 @@ WHERE author_lname IS NOT NULL;
 +---------+-----------------------------------------------------+----------------+-------+
 19 rows in set (0.00 sec)
 ```
+
+## Worked Examples
+
+1. Select all books where `author_lname` starts with a `'C'` or an `'S'`.
+
+```sql
+SELECT book_id, title, author_fname, author_lname
+FROM books
+WHERE
+  SUBSTR(author_lname, 1, 1) IN ('C', 'S');
+
+-- SELECT * FROM books
+-- WHERE
+--   author_lname LIKE 'C%'
+--   OR author_lname LIKE 'S%';
+```
+
+```
++---------+-----------------------------------------------------+--------------+--------------+
+| book_id | title                                               | author_fname | author_lname |
++---------+-----------------------------------------------------+--------------+--------------+
+|       7 | The Amazing Adventures of Kavalier & Clay           | Michael      | Chabon       |
+|       8 | Just Kids                                           | Patti        | Smith        |
+|      11 | What We Talk About When We Talk About Love: Stories | Raymond      | Carver       |
+|      ...                                                                                    |
++---------+-----------------------------------------------------+--------------+--------------+
+6 rows in set (0.01 sec)
+```
+
+2. Select `author_fname`, `author_lname`, and a count of books each author wrote as `COUNT` in the format `# book(s)`.
+
+```sql
+SELECT
+  author_fname,
+  author_lname,
+  CASE
+    WHEN COUNT(*) = 1 THEN CONCAT(COUNT(*), ' ', 'book')
+    ELSE CONCAT(COUNT(*), ' ', 'books')
+  END AS COUNT
+FROM books
+GROUP BY author_fname, author_lname;
+```
+
+```
++--------------+----------------+---------+
+| author_fname | author_lname   | COUNT   |
++--------------+----------------+---------+
+| Jhumpa       | Lahiri         | 2 books |
+| Neil         | Gaiman         | 3 books |
+| Dave         | Eggers         | 3 books |
+| Michael      | Chabon         | 1 book  |
+| ...                                     |
++--------------+----------------+---------+
+12 rows in set (0.00 sec)
+```
