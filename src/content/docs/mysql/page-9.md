@@ -58,7 +58,7 @@ CREATE TABLE products (quantity INT);
 
 ## DECIMAL
 
-`DECIMAL` can be more exact than `FLOAT` or `DOUBLE` but can take up moer space.
+`DECIMAL` can be more exact than `FLOAT` or `DOUBLE` but can take up more space.
 
 `DEC(size, d)` - An exact fixed-point number. The total number of digits is specified in size. The number of digits after the decimal point is specified in the d parameter. The maximum number for size is 65. The maximum number for d is 30. The default value for size is 10. The default value for d is 0 (same as `DECIMAL(size, d)`).
 
