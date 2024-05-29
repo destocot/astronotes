@@ -1,6 +1,5 @@
 ---
 title: "CRUD Basics"
-slug: "crud-basics"
 sidebar:
   order: 4
 ---

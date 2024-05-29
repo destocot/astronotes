@@ -1,6 +1,5 @@
 ---
 title: "Creating Databases & Tables"
-slug: "creating-databases-and-tables"
 sidebar:
   order: 2
 ---

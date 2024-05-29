@@ -1,6 +1,5 @@
 ---
 title: "Revisiting Data Types"
-slug: "revisiting-data-types"
 sidebar:
   order: 9
 ---

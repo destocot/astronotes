@@ -1,6 +1,5 @@
 ---
 title: "One to Many & Joins"
-slug: "one-to-many-and-joins"
 sidebar:
   order: 12
 ---

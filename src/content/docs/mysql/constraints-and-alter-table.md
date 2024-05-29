@@ -1,6 +1,5 @@
 ---
 title: "Constraints & ALTER TABLE"
-slug: "constraints-and-alter-table"
 sidebar:
   order: 11
 ---

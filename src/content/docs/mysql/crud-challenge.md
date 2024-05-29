@@ -1,6 +1,5 @@
 ---
 title: "CRUD Challenge"
-slug: "crud-challenge"
 sidebar:
   order: 5
 ---

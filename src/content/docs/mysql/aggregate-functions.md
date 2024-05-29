@@ -1,6 +1,5 @@
 ---
 title: "Aggregate Functions"
-slug: "aggregate-functions"
 sidebar:
   order: 8
 ---

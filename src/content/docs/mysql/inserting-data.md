@@ -1,6 +1,5 @@
 ---
 title: "Inserting Data"
-slug: "inserting-data"
 sidebar:
   order: 3
 ---

@@ -1,6 +1,5 @@
 ---
 title: "Many to many"
-slug: "many-to-many"
 sidebar:
   order: 13
 ---

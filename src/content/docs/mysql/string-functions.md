@@ -1,6 +1,5 @@
 ---
 title: "String Functions"
-slug: "string-functions"
 sidebar:
   order: 6
 ---

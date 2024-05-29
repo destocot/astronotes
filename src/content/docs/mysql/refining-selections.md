@@ -1,6 +1,5 @@
 ---
 title: "Refining Selections"
-slug: "refining-selections"
 sidebar:
   order: 7
 ---

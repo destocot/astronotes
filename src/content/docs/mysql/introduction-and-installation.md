@@ -1,6 +1,5 @@
 ---
 title: "Introduction & Installation"
-slug: "introduction-and-installation"
 sidebar:
   order: 1
 ---

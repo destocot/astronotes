@@ -10,18 +10,6 @@ export default defineConfig({
         github: "https://github.com/destocot",
       },
       sidebar: [
-        // {
-        //   label: "Guides",
-        //   items: [
-        //     // Each item here is one entry in the navigation menu.
-        //     { label: "Installation", link: "/guides/installation/" },
-        //     { label: "Example Guide", link: "/guides/example/" },
-        //   ],
-        // },
-        // {
-        //   label: "Components",
-        //   autogenerate: { directory: "components" },
-        // },
         {
           label: "Notes",
           items: [

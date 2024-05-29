@@ -1,6 +1,5 @@
 ---
 title: "Comparison & Logical Operators"
-slug: "comparison-and-logical-operators"
 sidebar:
   order: 10
 ---
