@@ -161,7 +161,7 @@ GROUP BY genre;
 
 ## Challenge 6
 
-"Write an SQL query to retrieve the `first name`, `last name`, **review count**, **minimum rating**, **maximum rating**, **average rating**, and **status** ('ACTIVE' if they have reviews, 'INACTIVE' if they don't) of reviewers by using a LEFT JOIN between the `reviewers` and `reviews` tables and grouping by `reviewers`.
+Write an SQL query to retrieve the `first name`, `last name`, **review count**, **minimum rating**, **maximum rating**, **average rating**, and **status** ('ACTIVE' if they have reviews, 'INACTIVE' if they don't) of reviewers by using a LEFT JOIN between the `reviewers` and `reviews` tables and grouping by `reviewers`.
 
 ```sql
 SELECT

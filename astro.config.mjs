@@ -16,7 +16,6 @@ export default defineConfig({
           autogenerate: { directory: "linux" },
           collapsed: true,
         },
-        { label: "Python", autogenerate: { directory: "python" } },
       ],
     }),
   ],
