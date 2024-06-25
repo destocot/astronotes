@@ -16,6 +16,12 @@ export default defineConfig({
           autogenerate: { directory: "linux" },
           collapsed: true,
         },
+        {
+          label: "Containers",
+          autogenerate: {
+            directory: "containers",
+          },
+        },
       ],
     }),
   ],
