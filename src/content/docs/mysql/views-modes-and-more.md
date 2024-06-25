@@ -221,6 +221,8 @@ GROUP BY released_year, genre;
 
 ## SQL Modes Basics
 
+test
+
 ## STRICT_TRANS_TABLES
 
 ## More Modes
