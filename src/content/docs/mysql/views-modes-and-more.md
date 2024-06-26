@@ -221,8 +221,225 @@ GROUP BY released_year, genre;
 
 ## SQL Modes Basics
 
-test
+Modes affter the SQL syntax MySQL supports and the data validation checks it performs.
+
+```sql
+-- sql mode for the global scope
+SELECT @@GLOBAL.sql_mode;
+```
+
+```
++-----------------------------------------------------------------------------------------------------------------------+
+| @@GLOBAL.sql_mode                                                                                                     |
++-----------------------------------------------------------------------------------------------------------------------+
+| ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-----------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+```sql
+-- sql mode for the session scope
+SELECT @@SESSION.sql_mode;
+```
+
+```
++-----------------------------------------------------------------------------------------------------------------------+
+| @@SESSION.sql_mode                                                                                                     |
++-----------------------------------------------------------------------------------------------------------------------+
+| ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION |
++-----------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+```
+
+> The sql mode for the GLOBAL and SESSION scope should be the same if you haven't changed anything in our current session
+
+### SETTING Modes
+
+```sql
+SET SESSION sql_mode = 'modes';
+```
+
+**Example** Removing `ERROR_FOR_DIVISION_BY_ZERO`
+
+```sql
+SELECT 3 / 0;
+SHOW WARNINGS;
+```
+
+```
++-------+
+| 3 / 0 |
++-------+
+|  NULL |
++-------+
+1 row in set, 1 warning (0.00 sec)
+
++---------+------+---------------+
+| Level   | Code | Message       |
++---------+------+---------------+
+| Warning | 1365 | Division by 0 |
++---------+------+---------------+
+1 row in set (0.00 sec)
+```
+
+```sql
+-- Query OK, 0 rows affected, 1 warning (0.00 sec)
+SET SESSION sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
+```
+
+```sql
+SELECT 3 / 0;
+SHOW WARNINGS;
+```
+
+```
++-------+
+| 3 / 0 |
++-------+
+|  NULL |
++-------+
+1 row in set (0.00 sec)
+
+Empty set (0.00 sec)
+```
 
 ## STRICT_TRANS_TABLES
 
+Strict Transactional Tables
+
+Strice mode controls how MySQL handles invalid or missing values in data-change statements sucha s INSERT OR UPDATE.
+
+```sql
+--ERROR 1366 (HY000): Incorrect decimal value: 'hi' for column 'rating' at row 1
+INSERT INTO reviews (rating, series_id, reviewer_id) VALUES ('hi', 1, 1);
+```
+
+```sql
+-- Query OK, 0 rows affected (0.00 sec)
+SET SESSION sql_mode = '';
+```
+
+```sql
+INSERT INTO reviews (rating, series_id, reviewer_id) VALUES ('hi', 1, 1);
+SHOW WARNINGS;
+SELECT * FROM reviews WHERE series_id = 1 AND reviewer_id = 1;
+```
+
+```
+Query OK, 1 row affected, 1 warning (0.00 sec)
+
++---------+------+------------------------------------------------------------+
+| Level   | Code | Message                                                    |
++---------+------+------------------------------------------------------------+
+| Warning | 1366 | Incorrect decimal value: 'hi' for column 'rating' at row 1 |
++---------+------+------------------------------------------------------------+
+1 row in set (0.00 sec)
+
++----+--------+-----------+-------------+
+| id | rating | series_id | reviewer_id |
++----+--------+-----------+-------------+
+|  1 |    8.0 |         1 |           1 |
+| 51 |    0.0 |         1 |           1 |
++----+--------+-----------+-------------+
+2 rows in set (0.00 sec)
+```
+
 ## More Modes
+
+### ONLY_FULL_GROUP_BY
+
+Reject queries for which the select list, `HAVING` condition, or `ORDER BY` list refer to nonaggregated columns;
+
+> By default when using `GROUP BY` we can only select columns that are aggregate function columns or columns that are named in the `GROUP BY` clause
+
+```sql
+SELECT title, AVG(rating)
+FROM series
+JOIN reviews ON reviews.series_id = series.id
+GROUP BY title;
+```
+
+```
++----------------------+-------------+
+| title                | AVG(rating) |
++----------------------+-------------+
+| Archer               |     6.76667 |
+| Arrested Development |     8.08000 |
+| Bob's Burgers        |     7.52000 |
+| ...                  |     ...     |
++----------------------+-------------+
+12 rows in set (0.01 sec)
+```
+
+```sql
+-- ERROR 1055 (42000): Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'tv_db.reviews.rating' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+SELECT title, rating
+FROM series
+JOIN reviews ON reviews.series_id = series.id
+GROUP BY title;
+```
+
+```sql
+SET SESSION sql_mode = "";
+```
+
+```sql
+SELECT title, rating
+FROM series
+JOIN reviews ON reviews.series_id = series.id
+GROUP BY title;
+```
+
+```
++----------------------+--------+
+| title                | rating |
++----------------------+--------+
+| Archer               |    8.0 |
+| Arrested Development |    8.1 |
+| Bob's Burgers        |    7.0 |
+| ...                  |    ... |
++----------------------+--------+
+12 rows in set (0.00 sec)
+```
+
+> Note in this case we are now getting the first rating for each group and not the average rating for each which is not obvious based on the query results
+
+### NO_ZERO_IN_DATE, NO_ZERO_DATE
+
+```sql
+SELECT DATE('2010-01-00');
+SHOW WARNINGS;
+```
+
+```
++--------------------+
+| DATE('2010-01-00') |
++--------------------+
+| NULL               |
++--------------------+
+1 row in set, 1 warning (0.00 sec)
+
++---------+------+----------------------------------------+
+| Level   | Code | Message                                |
++---------+------+----------------------------------------+
+| Warning | 1292 | Incorrect datetime value: '2010-01-00' |
++---------+------+----------------------------------------+
+1 row in set (0.00 sec)
+```
+
+```sql
+SET SESSION sql_mode = "";
+```
+
+```sql
+SELECT DATE('2010-01-00');
+```
+
+```
++--------------------+
+| DATE('2010-01-00') |
++--------------------+
+| 2010-01-00         |
++--------------------+
+1 row in set (0.00 sec)
+```
