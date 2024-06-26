@@ -216,6 +216,44 @@ FROM employees;
 
 ## ORDER BY with Windows
 
+We can use `ORDER BY` inside of the `OVER()` clause to re-order rows within each window.
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  SUM(salary) OVER(PARTITION BY department ORDER BY salary DESC) AS rolling_dept_salary,
+  SUM(salary) OVER(PARTITION BY department) AS total_dept_salary
+FROM employees;
+```
+
+```
++--------+------------------+--------+---------------------+-------------------+
+| emp_no | department       | salary | rolling_dept_salary | total_dept_salary |
++--------+------------------+--------+---------------------+-------------------+
+|     20 | customer service |  56000 |              117000 |            326000 |
+|     21 | customer service |  55000 |              172000 |            326000 |
+|     16 | customer service |  45000 |              217000 |            326000 |
+|     18 | customer service |  40000 |              257000 |            326000 |
+|     15 | customer service |  38000 |              295000 |            326000 |
+|     19 | customer service |  31000 |              326000 |            326000 |
+|     17 | customer service |  61000 |               61000 |            326000 |
+|    ... | ...              |  ...   |              ...    |            ...    |
+|     10 | sales            | 159000 |              159000 |            542000 |
+|     11 | sales            |  72000 |              231000 |            542000 |
+|    ... | ...              |  ...   |              ...    |            542000 |
++--------+------------------+--------+---------------------+-------------------+
+21 rows in set (0.00 sec)
+```
+
+Here the `rolling_dept_salary` calculated the current sum for each row.
+
+e.g. for row where `emp_no = 21`,
+the `rolling_dept_salary` = `rolling_dept_salary` (`emp_no = 20`) + `salary` (`emp_no = 21`)
+=> `rolling_dept_salary` = 117000 + 55000
+=> `rolling_dept_salary` = 172000 ✔️
+
 ## RANK()
 
 ## DENSE_RANK, & ROW_NUMBER()
