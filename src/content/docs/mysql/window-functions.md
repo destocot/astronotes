@@ -54,9 +54,165 @@ from emps;
 4 rows in set (0.00 sec)
 ```
 
+### Setup New Database
+
+```sql
+CREATE DATABASE employees_db;
+
+CREATE TABLE employees (
+  emp_no INT PRIMARY KEY AUTO_INCREMENT,
+  department VARCHAR(20),
+  salary INT
+);
+
+INSERT INTO employees (department, salary) VALUES
+  ('engineering', 80000),
+  ('engineering', 69000),
+  ('engineering', 70000),
+  ('engineering', 103000),
+  ('engineering', 67000),
+  ('engineering', 89000),
+  ('engineering', 91000),
+  ('sales', 59000),
+  ('sales', 70000),
+  ('sales', 159000),
+  ('sales', 72000),
+  ('sales', 60000),
+  ('sales', 61000),
+  ('sales', 61000),
+  ('customer service', 38000),
+  ('customer service', 45000),
+  ('customer service', 61000),
+  ('customer service', 40000),
+  ('customer service', 31000),
+  ('customer service', 56000),
+  ('customer service', 55000);
+```
+
 ## Using OVER()
 
+The `OVER()` clause constructs a window. When it's empty, the window will inclide all records.
+
+```sql
+SELECT AVG(salary) FROM employees;
+```
+
+```
++-------------+
+| AVG(salary) |
++-------------+
+|  68428.5714 |
++-------------+
+1 row in set (0.00 sec)
+```
+
+```sql
+SELECT AVG(salary) OVER() FROM employees;
+```
+
+```
++--------------------+
+| AVG(salary) OVER() |
++--------------------+
+|         68428.5714 |
+|         68428.5714 |
+|         68428.5714 |
+|         ...        |
++--------------------+
+21 rows in set (0.00 sec)
+```
+
+**Note** Passing no arguments to `OVER()` will create a window that will include all the rows.
+
+```sql
+SELECT emp_no, department, salary, AVG(SALARY) OVER() FROM employees;
+```
+
+```
++--------+------------------+--------+--------------------+
+| emp_no | department       | salary | AVG(SALARY) OVER() |
++--------+------------------+--------+--------------------+
+|      1 | engineering      |  80000 |         68428.5714 |
+|      2 | engineering      |  69000 |         68428.5714 |
+|     ...| ...              |  ...   |         68428.5714 |
+|     15 | customer service |  38000 |         68428.5714 |
+|     ...| ...              |  ...   |         68428.5714 |
++--------+------------------+--------+--------------------+
+21 rows in set (0.00 sec)
+```
+
+We can combine `OVER()` with most of the aggregate functions we've been introduced to so far (e.g. `AVG`, `SUM`, `MIN`, `MAX`, etc.)
+
+```sql
+SELECT emp_no, department, salary, MIN(salary) OVER() FROM employees;
+```
+
+```
++--------+------------------+--------+--------------------+
+| emp_no | department       | salary | MIN(salary) OVER() |
++--------+------------------+--------+--------------------+
+|      1 | engineering      |  80000 |              31000 |
+|      2 | engineering      |  69000 |              31000 |
+|     ...| ...              |  ...   |              31000 |
+|     15 | customer service |  38000 |              31000 |
+|     ...| ...              |  ...   |              31000 |
++--------+------------------+--------+--------------------+
+21 rows in set (0.00 sec)
+```
+
 ## PARTITION BY
+
+Inside of the `OVER()` clause, we can use `PARTION BY` to form rows into groups of rows.
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  AVG(salary) OVER(PARTITION BY department) AS dept_avg
+FROM employees;
+```
+
+```
++--------+------------------+--------+-------------+
+| emp_no | department       | salary | dept_avg    |
++--------+------------------+--------+-------------+
+|     21 | customer service |  55000 |  46571.4286 |
+|     20 | customer service |  56000 |  46571.4286 |
+|     ...| ...              |  ...   |  77428.5714 |
+|     10 | sales            | 159000 |  77428.5714 |
+|     ...| ...              |  ...   |  77428.5714 |
++--------+------------------+--------+-------------+
+21 rows in set (0.00 sec)
+```
+
+Here using `PARTITION BY department` we query the average of the department as a column for each department specifically
+
+e.g. for all rows where department = 'sales',
+the dept_avg = `SELECT AVG(salary) FROM employees WHERE department = 'sales'`
+
+**Example** For each row also query the payroll for the entire company (total_payroll) as well as the payroll for the respective department (dept_payroll).
+
+```sql
+SELECT
+  *,
+  SUM(salary) OVER(PARTITION BY department) AS dept_payroll,
+  SUM(salary) OVER() AS total_payroll
+FROM employees;
+```
+
+```
++--------+------------------+--------+--------------+---------------+
+| emp_no | department       | salary | dept_payroll | total_payroll |
++--------+------------------+--------+--------------+---------------+
+|     21 | customer service |  55000 |       326000 |       1437000 |
+|     20 | customer service |  56000 |       326000 |       1437000 |
+|     ...| ...              |  ...   |       326000 |       1437000 |
+|      9 | sales            |  70000 |       542000 |       1437000 |
+|     ...| ...              |  ...   |       542000 |       1437000 |
++--------+------------------+--------+--------------+---------------+
+21 rows in set (0.00 sec)
+```
 
 ## ORDER BY with Windows
 
@@ -69,3 +225,7 @@ from emps;
 ## FIRST_VALUE
 
 ## LEAD AND LAG
+
+```
+
+```
