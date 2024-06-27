@@ -31,9 +31,11 @@ It instead uses **chroot**, **namespaces**, and **cgroups**, to separate a group
 <!-- CONTINUATION CODE -->
 
 ```bash
+docker run -it --name docker-host --rm --privileged ubuntu:jammy
+
+# in unshare environment [terminal 1]
 mkdir /my-new-root
 echo "my super secret thing" >> /my-new-root/secret.txt
-chroot /my-new-root bash
 mkdir /my-new-root/lib{,64}
 cp /lib/x86_64-linux-gnu/libtinfo.so.6 /my-new-root/lib
 cp /lib/x86_64-linux-gnu/libc.so.6 /my-new-root/lib
@@ -43,7 +45,40 @@ cp /lib/x86_64-linux-gnu/libpcre2-8.so.0 /my-new-root/lib
 cp /lib64/ld-linux-x86-64.so.2 /my-new-root/lib64
 mkdir /my-new-root/bin
 cp /bin/bash /bin/ls /my-new-root/bin
-chroot /my-new-root bash
+# chroot /my-new-root bash
+apt-get update -y
+apt-get install debootstrap -y
+debootstrap --variant=minbase jammy /better-root
+unshare --mount --uts --ipc --net --pid --fork --user --map-root-user
+chroot /better-root bash # this also chroot's for us
+mount -t proc none /proc # process namespace
+mount -t sysfs none /sys # filsystem
+mount -t tmpfs none /tmp # filesystem
+```
+
+```bash
+docker exec -it docker-host bash
+
+# in NON unshare environment [terminal 2]
+mkdir /sys/fs/cgroup/sandbox
+cat /sys/fs/cgroup/cgroup.procse
+
+# get isolated bash PID for unshare environment
+echo <PID> /sys/fs/cgroup/sandbox/cgroup.procs
+
+mkdir /sys/fs/cgroup/other-procs
+cat /sys/fs/cgroup/cgroups.proc
+
+# you have to do this one at a time for each process
+echo <PID> > /sys/fs/cgroup/other-procs/cgroup.procs
+
+echo "+cpuset +cpu +io +memory +hugetlb +pids +rdma" > /sys/fs/cgroup/cgroup.subtree_control
+
+# all the controllers now available
+cat /sys/fs/cgroup/sandbox/cgroup.controllers
+
+# notice how many more files there are now
+ls /sys/fs/cgroup/sandbox
 ```
 
 <!-- CONTINUATION CODE -->
@@ -178,9 +213,142 @@ root          25  0.0  0.0   4628  3828 pts/1    Ss   05:17   0:00 bash
 root          34  0.0  0.0   7064  1556 pts/1    R+   05:19   0:00 ps aux
 ```
 
-CONTINUE FROM
+### unshare
 
-- CRAFTING CONTAINERS BY HAND > NAMESPEACES > Safety with namespaces
-- video Part 2 > 12:00 (remaining)
+`unshare` creates a new isolated namespace from its parent
+
+```bash
+# install debootstrap
+apt-get update -y
+apt-get install debootstrap -y
+debootstrap --variant=minbase jammy /better-root
+
+# head into the new namespace'd, chroot'd environment
+
+# create a new process and in that process create a new namespace for (uts, net, pid, etc.)
+unshare --mount --uts --ipc --net --pid --fork --user --map-root-user
+chroot /better-root bash # this also chroot's for us
+mount -t proc none /proc # process namespace
+mount -t sysfs none /sys # filsystem
+mount -t tmpfs none /tmp # filesystem
+```
+
+This will create a new environment that's isolated on the system with its own PIDs, mounts (like storage and volumes), and network stack. Now we can't see any of the processes!
 
 ## cgroups
+
+We still have a problem.
+
+Every isolated environment has access to all _physical_ resources of the server. There's no isolation of physical components from these environments.
+
+control groups (cgroups) allow an isolated enviroment to only get so much CPU, so much memory, etc. and once it's out of those it's out-of-luck.
+
+cgroup v2 is the standard
+
+```bash
+grep -c cgroup /proc/mounts
+```
+
+If the number outputted is **greater than** one, the system you're on is using cgroups v1.
+
+cgroups as we have said allow you to move processes and their children into groups which then allow you to limit various aspect of them.
+
+You interact with cgroups by a pseudo-file system.
+
+```bash
+cd /sys/fs/cgroup
+ls
+```
+
+```
+cgroup.controllers      cpu.max.burst          hugetlb.1GB.events        ...
+cgroup.events           cpu.pressure           hugetlb.1GB.events.local  ...
+cgroup.freeze           cpu.stat               hugetlb.1GB.max           ...
+cgroup.kill             cpuset.cpus            io.max                    ...
+...                     ...                    ...                       ...
+```
+
+These "files" (`cpu.max`. `cgroup.procs`, `memory.high`, etc.) represents a setting that you can play with regard to this cgroup.
+
+In this case we are looking at the root cgroup: all cgroups will be children of this root cgroup.
+
+To make your own cgroup is by creating a folder inside of the cgroup.
+
+```bash
+# creates the cgroup
+mkdir /sys/fs/cgroup/sandbox
+
+# look at all the files created automatically
+ls /sys/fs/cgroup/sandbox
+```
+
+```
+cgroup.controllers  cgroup.kill             cgroup.procs            cgroup.threads  ...cgroup.events       cgroup.max.depth        cgroup.stat             cgroup.type     ...
+cgroup.freeze       cgroup.max.descendants  cgroup.subtree_control  cpu.pressure    ...
+```
+
+By creating a new directory in `/sys/fs/cgroup` we create a new cgroup. We can put limits on this new cgroup.
+
+We can move our unshared environment into the cgroup. Every process belongs to exactly one cgroup.
+
+```bash
+# find your isolated bash PID
+ps aux
+
+# should (currently) see the process in the root cgroup
+cat /sys/fs/cgroup/cgroup.procs
+
+# put the unshared bash process into the cgroup called sandbox
+echo <PID> /sys/fs/cgroup/sandbox/cgroup.procs
+
+# should see hte process in the sandbox cgroup
+cat /sys/fs/cgroup/sandbox/cgroup.procs
+
+# should NO LONGER see the process in the root cgroup
+cat /sys/fs/cgroup/cgroup.procs
+```
+
+We have now moved our unshared bash process into a cgroup. We haven't placed any limits on it yet but it's there, ready to be managed.
+
+**Problem**
+
+```bash
+# should see all the available controllers
+cat /sys/fs/cgroup/cgroup.controllers
+
+# there's no controllers
+cat /sys/fs/cgroup/sandbox/cgroup.controllers
+
+# there's no controllers enabled its children
+cat /sys/fs/cgroup/cgroup.subtree_control
+```
+
+In order for our sandbox cgroup to have controllers we need to enable them for the children of our root cgroup.
+
+We need to add them to our root's `cgroup.subtree_control`. **HOWEVER**, we cannot add new subtree_control configs while the cgroup itself has proceses in it.
+
+**Solution**
+
+We're going to create another cgroup, add the rest of the processes to that one, and then enable the subtree_control configs for the root cgroup.
+
+```bash
+# make new cgroup for the rest of the processes, you can't modify cgroups that have processes and by default Docker doesn't include any subtree_controllers
+mkdir /sys/fs/cgroup/other-procs
+
+# see all the processes you need to move, rerun each time after you add as it may move multiple processes at once due to some being parent / child
+cat /sys/fs/cgroup/cgroups.proc
+
+# you have to do this one at a time for each process
+echo <PID> > /sys/fs/cgroup/other-procs/cgroup.procs
+
+# add the controllers
+echo "+cpuset +cpu +io +memory +hugetlb +pids +rdma" > /sys/fs/cgroup/cgroup.subtree_control
+
+# all the controllers now available
+cat /sys/fs/cgroup/sandbox/cgroup.controllers
+
+# notice how many more files there are now
+ls /sys/fs/cgroup/sandbox
+```
+
+We did it! We went ahead and added all the possible controllers but normally you should just add just the ones you need.
