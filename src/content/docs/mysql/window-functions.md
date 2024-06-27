@@ -256,11 +256,237 @@ the `rolling_dept_salary` = `rolling_dept_salary` (`emp_no = 20`) + `salary` (`e
 
 ## RANK()
 
-## DENSE_RANK, & ROW_NUMBER()
+Returns the rank of the current row within its partition, with gaps.
+
+```sql
+SELECT *, RANK() OVER(ORDER BY salary DESC) AS overall_salary_rank
+FROM employees;
+```
+
+```
++--------+------------------+--------+---------------------+
+| emp_no | department       | salary | overall_salary_rank |
++--------+------------------+--------+---------------------+
+|     10 | sales            | 159000 |                   1 |
+|      4 | engineering      | 103000 |                   2 |
+|      7 | engineering      |  91000 |                   3 |
+|    ... | ...              |  ...   |                 ... |
+|      3 | engineering      |  70000 |                   7 |*
+|      9 | sales            |  70000 |                   7 |*
+|      2 | engineering      |  69000 |                   9 |*
+|    ... | ...              |  ...   |                 ... |
++--------+------------------+--------+---------------------+
+21 rows in set (0.00 sec)
+```
+
+**Note** We are not just counting the row number. See that two rows have a salary ranked at 7, followed by the next row skipping to rank 9.
+
+### With PARTITION BY
+
+```sql
+SELECT
+  *,
+  RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_rank,
+  RANK() OVER(ORDER BY salary DESC) AS overall_salary_rank
+FROM employees;
+```
+
+```
++--------+------------------+--------+------------------+---------------------+
+| emp_no | department       | salary | dept_salary_rank | overall_salary_rank |
++--------+------------------+--------+------------------+---------------------+
+|     10 | sales            | 159000 |                1 |                   1 |
+|      4 | engineering      | 103000 |                1 |                   2 |
+|      7 | engineering      |  91000 |                2 |                   3 |*
+|      6 | engineering      |  89000 |                3 |                   4 |*
+|    ... | ...              |  ...   |              ... |                 ... |
++--------+------------------+--------+------------------+---------------------+
+21 rows in set (0.00 sec)
+```
+
+### With ORDER BY
+
+```sql
+SELECT
+  *,
+  RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_rank,
+  RANK() OVER(ORDER BY salary DESC) AS overall_salary_rank
+FROM employees
+ORDER BY department;
+```
+
+```
+21 rows in set (0.00 sec)
+```
+
+## DENSE_RANK
+
+`DENSE_RANK()` returns the rank of the current row in its partition, **without** gaps.
+
+```sql
+SELECT
+  *,
+  RANK() OVER(ORDER BY salary DESC) AS overall_rank,
+  DENSE_RANK() OVER(ORDER BY salary DESC) AS overall_dense_rank
+FROM employees
+ORDER BY overall_rank;
+```
+
+```
++--------+------------------+--------+--------------+--------------------+
+| emp_no | department       | salary | overall_rank | overall_dense_rank |
++--------+------------------+--------+--------------+--------------------+
+|    ... | ...              |  ...   |          ... |                ... |
+|     11 | sales            |  72000 |            6 |                  6 |
+|      3 | engineering      |  70000 |            7 |                  7 |*
+|      9 | sales            |  70000 |            7 |                  7 |*
+|      2 | engineering      |  69000 |            9 |                  8 |*
+|      5 | engineering      |  67000 |           10 |                  9 |*
+|     13 | sales            |  61000 |           11 |                 10 |
+|    ... | ...              |  ...   |          ... |                ... |
++--------+------------------+--------+--------------+--------------------+
+21 rows in set (0.00 sec)
+```
+
+**Note** After the rows that are both have an overall_rank of 7, the next row has an overall_rank of 9 and an overall_dense_rank of 8. This is because `RANK` considers gaps, whereas `DENSE_RANK` does not.
+
+## ROW_NUMBER
+
+`ROW_NUMBER()` returns the number of the current row within its partition. Row numbers range from 1 to the number of partition rows.
+
+```sql
+SELECT
+  *,
+  ROW_NUMBER() OVER(PARTITION BY department ORDER BY salary DESC) AS dept_row_num,
+  RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_rank
+FROM employees
+ORDER BY department, dept_row_num;
+```
+
+```
++--------+------------------+--------+--------------+------------------+
+| emp_no | department       | salary | dept_row_num | dept_salary_rank |
++--------+------------------+--------+--------------+------------------+
+|     17 | customer service |  61000 |            1 |                1 |
+|     20 | customer service |  56000 |            2 |                2 |
+|     21 | customer service |  55000 |            3 |                3 |
+|    ... | ...              |  ...   |          ... |              ... |
+|     10 | sales            | 159000 |            1 |                1 |
+|     11 | sales            |  72000 |            2 |                2 |
+|      9 | sales            |  70000 |            3 |                3 |
+|     14 | sales            |  61000 |            4 |                4 |*
+|     13 | sales            |  61000 |            5 |                4 |*
+|     12 | sales            |  60000 |            6 |                6 |
+|      8 | sales            |  59000 |            7 |                7 |
++--------+------------------+--------+--------------+------------------+
+21 rows in set (0.00 sec)
+```
 
 ## NTILE()
 
+`NTILE` Divides a partition into **N** groups (buckets), assigns each row in the partition its bucket number, and returns the bucket number of the current row;
+
+```sql
+SELECT
+  *,
+  NTILE(4) OVER(ORDER BY salary DESC) AS salary_quartile
+FROM employees;
+```
+
+```
++--------+------------------+--------+-----------------+
+| emp_no | department       | salary | salary_quartile |
++--------+------------------+--------+-----------------+
+|     10 | sales            | 159000 |               1 |
+|      4 | engineering      | 103000 |               1 |
+|    ... | ...              |  ...   |             ... |
+|      3 | engineering      |  70000 |               2 |
+|      9 | sales            |  70000 |               2 |
+|    ... | ...              |  ...   |             ... |
+|     14 | sales            |  61000 |               3 |
+|     17 | customer service |  61000 |               3 |
+|    ... | ...              |  ...   |             ... |
+|     21 | customer service |  55000 |               4 |
+|     16 | customer service |  45000 |               4 |
+|    ... | ...              |  ...   |             ... |
++--------+------------------+--------+-----------------+
+21 rows in set (0.00 sec)
+```
+
+```sql
+SELECT
+  *,
+  NTILE(4) OVER(PARTITION BY department ORDER BY salary DESC) as dept_salary_quartile,
+  NTILE(4) OVER(ORDER BY salary DESC) AS salary_quartile
+FROM employees;
+```
+
+```
++--------+------------------+--------+----------------------+
+| emp_no | department       | salary | dept_salary_quartile |
++--------+------------------+--------+----------------------+
+|     17 | customer service |  61000 |                    1 |
+|     20 | customer service |  56000 |                    1 |
+|     21 | customer service |  55000 |                    2 |
+|     16 | customer service |  45000 |                    2 |
+|     18 | customer service |  40000 |                    3 |
+|     15 | customer service |  38000 |                    3 |
+|     19 | customer service |  31000 |                    4 |
+|      4 | engineering      | 103000 |                    1 |
+|      7 | engineering      |  91000 |                    1 |
+|      6 | engineering      |  89000 |                    2 |
+|      1 | engineering      |  80000 |                    2 |
+|    ... | ...              |  ...   |                  ... |
++--------+------------------+--------+----------------------+
+21 rows in set (0.00 sec)
+```
+
 ## FIRST_VALUE
+
+`FIRST_VALUE(expression)` returns the value of the **expression** from the first row of the window frame.
+
+```sql
+SELECT
+  *,
+  FIRST_VALUE(emp_no) OVER(ORDER BY salary DESC) AS emp_no_highest_salary
+FROM employees;
+```
+
+```
++--------+------------------+--------+-----------------------+
+| emp_no | department       | salary | emp_no_highest_salary |
++--------+------------------+--------+-----------------------+
+|     10 | sales            | 159000 |                    10 |
+|      4 | engineering      | 103000 |                    10 |
+|      7 | engineering      |  91000 |                    10 |
+|     ...| ...              |  ...   |                   ... |
++--------+------------------+--------+-----------------------+
+21 rows in set (0.00 sec)
+```
+
+```sql
+SELECT
+  *,
+  FIRST_VALUE(emp_no) OVER(PARTITION BY department ORDER BY salary DESC) AS emp_no_highest_dept_salary,
+  FIRST_VALUE(emp_no) OVER(ORDER BY salary DESC) AS emp_no_highest_salary
+FROM employees;
+```
+
+```
++--------+------------------+--------+----------------------------+-----------------------+
+| emp_no | department       | salary | emp_no_highest_dept_salary | emp_no_highest_salary |
++--------+------------------+--------+----------------------------+-----------------------+
+|     10 | sales            | 159000 |                         10 |                    10 |
+|      4 | engineering      | 103000 |                          4 |                    10 |
+|      7 | engineering      |  91000 |                          4 |                    10 |
+|     ...| ...              |  ...   |                        ... |                   ... |
++--------+------------------+--------+----------------------------+-----------------------+
+21 rows in set (0.00 sec)
+```
+
+See also `LAST_VALUE(expresssion)` and `NTH_VALUE(expression, n)`
+
+[MySQL Window Functions](https://dev.mysql.com/doc/refman/8.4/en/window-function-descriptions.html)
 
 ## LEAD AND LAG
 
