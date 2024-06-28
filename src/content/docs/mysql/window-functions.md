@@ -490,6 +490,149 @@ See also `LAST_VALUE(expresssion)` and `NTH_VALUE(expression, n)`
 
 ## LEAD AND LAG
 
+`LAG()` (and the similar `LEAD()`) are often used to compute differences between rows.
+
+`LAG(expression)` returns the value of the expression from the **previous row** of the window frame.
+
+`LEAD(expression)` returns the value of the expression from the **next row** of the window frame.
+
+```sql
+SELECT emp_no, department, salary, LAG(salary) OVER(ORDER BY salary DESC)
+FROM employees;
 ```
 
+```
++--------+------------------+--------+----------------------------------------+
+| emp_no | department       | salary | LAG(salary) OVER(ORDER BY salary DESC) |
++--------+------------------+--------+----------------------------------------+
+|     10 | sales            | 159000 |                                   NULL |
+|      4 | engineering      | 103000 |                                 159000 |
+|      7 | engineering      |  91000 |                                 103000 |
+|      6 | engineering      |  89000 |                                  91000 |
+|    ... | ...              |  ...   |                                   ...  |
++--------+------------------+--------+----------------------------------------+
+21 rows in set (0.01 sec)
+```
+
+**Example** Calculate the difference (the salary jump) between each row.
+
+### With LAG()
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  salary - LAG(salary) OVER(ORDER BY salary DESC) AS salary_diff
+FROM employees;
+```
+
+```
++--------+------------------+--------+-------------+
+| emp_no | department       | salary | salary_diff |
++--------+------------------+--------+-------------+
+|     10 | sales            | 159000 |        NULL |
+|      4 | engineering      | 103000 |      -56000 |
+|      7 | engineering      |  91000 |      -12000 |
+|      6 | engineering      |  89000 |       -2000 |
+|    ... | ...              |  ...   |        ...  |
++--------+------------------+--------+-------------+
+21 rows in set (0.00 sec)
+```
+
+### With LEAD()
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  salary - LEAD(salary) OVER(ORDER BY salary DESC) AS salary_diff
+FROM employees;
+```
+
+```
++--------+------------------+--------+-------------+
+| emp_no | department       | salary | salary_diff |
++--------+------------------+--------+-------------+
+|     10 | sales            | 159000 |       56000 |
+|      4 | engineering      | 103000 |       12000 |
+|      7 | engineering      |  91000 |        2000 |
+|      6 | engineering      |  89000 |        9000 |
+|    ... | ...              |  ...   |        ...  |
++--------+------------------+--------+-------------+
+21 rows in set (0.00 sec)
+```
+
+**Example** Calculate the difference between each row in the same department.
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  salary - LAG(salary) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_diff
+FROM employees;
+```
+
+```
++--------+------------------+--------+------------------+
+| emp_no | department       | salary | dept_salary_diff |
++--------+------------------+--------+------------------+
+|     17 | customer service |  61000 |             NULL |
+|     20 | customer service |  56000 |            -5000 |
+|     21 | customer service |  55000 |            -1000 |
+|     16 | customer service |  45000 |           -10000 |
+|    ... | ...              |  ...   |             ...  |
+|      4 | engineering      | 103000 |             NULL |
+|      7 | engineering      |  91000 |           -12000 |
+|      6 | engineering      |  89000 |            -2000 |
+|      1 | engineering      |  80000 |            -9000 |
+|    ... | ...              |  ...   |             ...  |
+|     10 | sales            | 159000 |             NULL |
+|     11 | sales            |  72000 |           -87000 |
+|      9 | sales            |  70000 |            -2000 |
+|     14 | sales            |  61000 |            -9000 |
+|    ... | ...              |  ...   |             ...  |
++--------+------------------+--------+------------------+
+21 rows in set (0.00 sec)
+```
+
+> We can pass a second argument to `LAG(expression, N)` and `LEAD(expression, N)` to specify the number of rows to look back or forward.
+
+**Example** Calculate the difference between each row and the row **two rows** back in the same department.
+
+```sql
+SELECT
+  emp_no,
+  department,
+  salary,
+  salary - LAG(salary, 2) OVER(PARTITION BY department ORDER BY salary DESC) AS dept_salary_diff
+FROM employees;
+```
+
+```
++--------+------------------+--------+------------------+
+| emp_no | department       | salary | dept_salary_diff |
++--------+------------------+--------+------------------+
+|     17 | customer service |  61000 |             NULL |
+|     20 | customer service |  56000 |             NULL |
+|     21 | customer service |  55000 |            -6000 |
+|     16 | customer service |  45000 |           -11000 |
+|     18 | customer service |  40000 |           -15000 |
+|    ... | ...              |  ...   |             ...  |
+|      4 | engineering      | 103000 |             NULL |
+|      7 | engineering      |  91000 |             NULL |
+|      6 | engineering      |  89000 |           -14000 |
+|      1 | engineering      |  80000 |           -11000 |
+|      3 | engineering      |  70000 |           -19000 |
+|    ... | ...              |  ...   |             ...  |
+|     10 | sales            | 159000 |             NULL |
+|     11 | sales            |  72000 |             NULL |
+|      9 | sales            |  70000 |           -89000 |
+|     14 | sales            |  61000 |           -11000 |
+|     13 | sales            |  61000 |            -9000 |
+|    ... | ...              |  ...   |             ...  |
++--------+------------------+--------+------------------+
+21 rows in set (0.00 sec)
 ```
