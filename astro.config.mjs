@@ -22,6 +22,10 @@ export default defineConfig({
             directory: "containers",
           },
         },
+        {
+          label: "Python",
+          autogenerate: { directory: "python" },
+        },
       ],
     }),
   ],
