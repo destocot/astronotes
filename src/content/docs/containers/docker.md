@@ -218,6 +218,8 @@ The `denoland` part is the organization that created the image. The `deno` part 
 
 ### Bun
 
+..15 min left
+
 ### A few other runtimes
 
 ## Tags

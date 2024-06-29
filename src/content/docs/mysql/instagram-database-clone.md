@@ -157,12 +157,130 @@ DESC follows;
 
 ## 3 Approaches for Hashtags
 
-## Implementing Hashtags
+### Solution 1: Add a column called `tags` to the `photos` table
 
+```
+Photo Table
++----------+------------+-----------------------------+
+| photo_id | image_url  | tags                        |
++----------+------------+-----------------------------+
+|        1 | /ksjd97123 | #cat#pets#animals#cute#omg  |
+|        2 | /098fsdskj | #microwave#sadfood#gross    |
+|        3 | /87hghjkd  | #smile#ego#cute#srrynotsrry |
++----------+------------+-----------------------------+
+3 rows in set (0.00 sec)
+```
+
+### Solution 2: Create a `tags` table
+
+```
+Photo Table
++----------+------------+
+| photo_id | image_url  |
++----------+------------+
+|        1 | /ksjd97123 |
+|        2 | /098fsdskj |
+|        3 | /87hghjkd  |
++----------+------------+
+
+Tags Table
++------------+----------+
+| tag_name   | photo_id |
++------------+----------+
+| #cute      |        1 |
+| #cute      |        3 |
+| #microwave |        2 |
+| #ego       |        3 |
+| #smile     |        3 |
+| #gross     |        2 |
++------------+----------+
+```
+
+### Solution 3: Create a `tags` table and a `photo_tags` table
+
+```
+Photo Table
++----------+------------+
+| photo_id | image_url  |
++----------+------------+
+|        1 | /ksjd97123 |
+|        2 | /098fsdskj |
+|        3 | /87hghjkd  |
++----------+------------+
+
+Tags Table
++--------+------------+
+| tag_id | tag_name   |
++--------+------------+
+|      1 | #cute      |
+|      2 | #pets      |
+|      3 | #microwave |
+|      4 | #ego       |
+|      5 | #smile     |
+|      6 | #gross     |
++--------+------------+
+
+Photo Tags Table
++----------+--------+
+| photo_id | tag_id |
++----------+--------+
+|        1 |      1 |
+|        3 |      1 |
+|        1 |      2 |
+|        2 |      3 |
+|        3 |      4 |
+|        3 |      5 |
+|        2 |      6 |
++----------+--------+
+```
+
+## Hashtags Schema
+
+```sql
+CREATE TABLE tags (
+  tag_id INT AUTO_INCREMENT PRIMARY KEY,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  tag_name VARCHAR(255) NOT NULL UNIQUE
+);
+
+DESC tags;
 ```
 
 ```
++------------+--------------+------+-----+-------------------+-------------------+
+| Field      | Type         | Null | Key | Default           | Extra             |
++------------+--------------+------+-----+-------------------+-------------------+
+| tag_id     | int          | NO   | PRI | NULL              | auto_increment    |
+| created_at | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| tag_name   | varchar(255) | NO   | UNI | NULL              |                   |
++------------+--------------+------+-----+-------------------+-------------------+
+3 rows in set (0.00 sec)
+```
 
+```sql
+CREATE TABLE photo_tags (
+  photo_id INT NOT NULL,
+  FOREIGN KEY (photo_id) REFERENCES photos(photo_id),
+
+  tag_id INT NOT NULL,
+  FOREIGN KEY (tag_id) REFERENCES tags(tag_id),
+
+  -- Composite Primary Key
+  PRIMARY KEY (photo_id, tag_id)
+);
+
+DESC photo_tags;
 ```
 
 ```
++----------+------+------+-----+---------+-------+
+| Field    | Type | Null | Key | Default | Extra |
++----------+------+------+-----+---------+-------+
+| photo_id | int  | NO   | PRI | NULL    |       |
+| tag_id   | int  | NO   | PRI | NULL    |       |
++----------+------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+```
+
+**Note**: The `photo_tags` table has a composite primary key of `photo_id` and `tag_id`. This means that a photo can only have a tag once since the combination of `photo_id` and `tag_id` is unique.
