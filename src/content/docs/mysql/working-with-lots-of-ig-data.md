@@ -175,6 +175,71 @@ WHERE photo_id IS NULL;
 
 ## Instagram Challenge #4
 
+**Prompt:** We're running a new contest to see who can get the most likes on a single photo.
+
+WHO WON??!!
+
+```sql
+SELECT
+  users.user_id,
+  username,
+  photos.photo_id,
+  photos.image_url,
+  COUNT(*) AS total_likes
+FROM photos
+INNER JOIN likes ON photos.photo_id = likes.photo_id
+INNER JOIN users ON photos.user_id = users.user_id
+GROUP BY photos.photo_id
+ORDER BY total_likes DESC
+LIMIT 1;
+```
+
+```
++---------+---------------+----------+---------------------+-------------+
+| user_id | username      | photo_id | image_url           | total_likes |
++---------+---------------+----------+---------------------+-------------+
+|      52 | Zack_Kemmer93 |      145 | https://jarret.name |          48 |
++---------+---------------+----------+---------------------+-------------+
+1 row in set (0.01 sec)
+```
+
+### Alternative Solution 1
+
+USING a subquery to get the `username`.
+
+```sql
+SELECT
+  photos.user_id,
+  (SELECT username FROM users WHERE user_id = photos.user_id) AS username,
+  photos.photo_id,
+  photos.image_url,
+  COUNT(*) AS total_likes
+FROM photos
+INNER JOIN likes ON photos.photo_id = likes.photo_id
+GROUP BY photos.photo_id
+ORDER BY total_likes DESC
+LIMIT 1;
+```
+
+### Alternative Solution 2
+
+Joining from `users` to `photos` to `likes` instead of the other way around.
+
+```sql
+SELECT
+  users.user_id,
+  username,
+  photos.photo_id,
+  image_url,
+  COUNT(*) as total_likes
+FROM users
+JOIN photos ON users.user_id = photos.user_id
+JOIN likes ON photos.photo_id = likes.photo_id
+GROUP BY photos.photo_id, users.user_id
+ORDER BY total_likes DESC
+LIMIT 1;
+```
+
 ## Instagram Challenge #5
 
 ## Instagram Challenge #6
