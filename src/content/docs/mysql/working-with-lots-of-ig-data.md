@@ -242,6 +242,110 @@ LIMIT 1;
 
 ## Instagram Challenge #5
 
+**Prompt:** Our Investors want to know...
+
+How many times does the average user post?
+
+```sql
+SELECT
+  (SELECT COUNT(*) FROM photos) /
+  (SELECT COUNT(*) FROM users) AS avg_user_posts;
+```
+
+```
++----------------+
+| avg_user_posts |
++----------------+
+|         2.5700 |
++----------------+
+1 row in set (0.00 sec)
+```
+
+### Alternative Solution 1
+
+Here we are using a subquery to get the total number of users and photos.
+
+```sql
+SELECT
+  COUNT(*) / (SELECT COUNT(*) FROM users) AS avg_user_posts
+FROM photos;
+```
+
+### Alternative Solution 2
+
+Here we are using a subquery to get the total number of photos per user.
+
+```sql
+SELECT AVG(photo_count) AS avg_user_posts
+FROM (
+  SELECT COUNT(photos.photo_id) AS photo_count
+  FROM users
+  LEFT JOIN photos ON users.user_id = photos.user_id
+  GROUP BY users.user_id
+) AS user_photo_counts;
+```
+
 ## Instagram Challenge #6
 
+**Prompt:** A brand wants to know which hastags to use in a post
+
+What are the top 5 most commonly used hashtags?
+
+```sql
+SELECT
+  tags.tag_name,
+  COUNT(*) AS tag_count
+FROM photo_tags
+JOIN tags ON photo_tags.tag_id = tags.tag_id
+GROUP BY photo_tags.tag_id
+ORDER BY tag_count DESC
+LIMIT 5;
+```
+
+```
++----------+-----------+
+| tag_name | tag_count |
++----------+-----------+
+| smile    |        59 |
+| beach    |        42 |
+| party    |        39 |
+| fun      |        38 |
+| concert  |        24 |
++----------+-----------+
+5 rows in set (0.00 sec)
+```
+
 ## Instagram Challenge #7
+
+**Prompt:** We have a small problem with bots on our site....
+
+Find users who have liked every single photo on the site.
+
+```sql
+SELECT users.username, COUNT(*) AS num_likes
+FROM users
+JOIN likes ON users.user_id = likes.user_id
+GROUP BY users.user_id
+HAVING num_likes = (SELECT COUNT(*) FROM photos);
+```
+
+```
++--------------------+-----------+
+| username           | num_likes |
++--------------------+-----------+
+| Aniya_Hackett      |       257 |
+| Jaclyn81           |       257 |
+| Rocio33            |       257 |
+| Maxwell.Halvorson  |       257 |
+| Ollie_Ledner37     |       257 |
+| Mckenna17          |       257 |
+| Duane60            |       257 |
+| Julien_Schmidt     |       257 |
+| Mike.Auer39        |       257 |
+| Nia_Haag           |       257 |
+| Leslie67           |       257 |
+| Janelle.Nikolaus81 |       257 |
+| Bethany20          |       257 |
++--------------------+-----------+
+13 rows in set (0.00 sec)
+```
