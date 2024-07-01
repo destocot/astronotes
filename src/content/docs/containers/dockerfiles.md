@@ -18,7 +18,8 @@ Each line in a `Dockerfile` is a new directive of how to change your Docker cont
 
 ### The most basic Dockerfile-based Container
 
-```Dockerfile
+```bash
+# Dockerfile
 FROM node:20
 
 CMD ["node", "-e", "console.log(\"hi lol\")"]
@@ -96,7 +97,8 @@ console.log("server started");
 
 We will write a new instruction `COPY`
 
-```Dockerfile
+```bash
+# Dockerfile
 FROM node:20
 
 COPY index.js index.js
@@ -169,7 +171,9 @@ This is both messy and unsafe.
 
 To fix this, we'll put the directory inside our home directory under a different user.
 
-```Dockerfile
+```bash
+# Dockerfile
+
 FROM node:20
 
 USER node
@@ -191,7 +195,8 @@ useradd -ms /bin/bash <username>
 
 **Example**
 
-```Dockerfile
+```bash
+# Dockerfile
 FROM node:20
 
 RUN useradd -ms /bin/bash lolcat
@@ -213,7 +218,7 @@ We can do this with the `--chown=node:node` flag. Where the first `node` is the 
 
 > It is no big deal that the "code" directory doesn't exist. Docker will create it for us.
 
-```Dockerfile
+```
 FROM node:20
 
 USER node
@@ -243,6 +248,112 @@ Use `COPY` unless you need to unzip something or are downloading something.
 So now all paths are relative to that.
 
 ## Build a More Complicated Node.js App
+
+```js
+// index.js
+// this is the sample app from fastify.dev
+
+// Require the framework and instantiate it
+const fastify = require("fastify")({ logger: true });
+
+// Declare a route
+fastify.get("/", function handler(request, reply) {
+  reply.send({ hello: "world" });
+});
+
+// Run the server!
+fastify.listen({ port: 8080, host: "0.0.0.0" }, (err) => {
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+});
+```
+
+This is a **Fastify** server and will require that we `npm install` the dependencies.
+
+```bash
+npm init -y
+npm install fastify
+```
+
+Now let's try to containerize it, if we run it right now it'd fail because we didn't `npm install` the dependencies.
+
+So now right after the `COPY` we'll add a `RUN` instruction.
+
+```bash
+# Dockerfile
+FROM node:20
+
+USER node
+
+WORKDIR /home/node/code
+
+COPY --chown=node:node . .
+
+RUN npm ci
+
+CMD ["node", "index.js"]
+```
+
+### npm ci
+
+`npm ci` is similar to `npm install` with a few key differences:
+
+- it'll follow the `package-lock.json` exactly (where `npm install` will ignore it and update it if newer patch versions of your dependencies are available)
+
+- it'll automatically delete `node_modules` if it exists.
+
+> `npm ci` is made for environments like this
+
+```bash
+docker build -t more-complicated-app .
+docker run -it -p 8080:8080 --name my-app --rm --init more-complicated-app
+```
+
+We changed the `COPY` to copy everything in the directory. If we're building directly from a repo it won't copy the `node_modules` so we assume they won't be there.
+
+### .dockerignore
+
+We can add a `.dockerignore` file to prevent Docker from copying certain files (has the same format as a `.gitignore`)
+
+```
+node_modules/
+.git/
+```
+
+### Permissions
+
+When we try to build again, it _may fail_ with permission issues.
+
+This is because `WORKDIR` creates a directory as root.
+
+So the `node` user won't have enough permissions to modify that directory.
+
+We could either:
+
+- A. Use `RUN` to change the user
+
+- B. Use `RUN` to make the direcotry in the first place as node
+
+```bash
+# Dockerfile
+FROM node:20
+
+USER node
+
+RUN mkdir /home/node/code
+
+WORKDIR /home/node/code
+
+COPY --chown=node:node . .
+
+RUN npm ci
+
+CMD ["node", "index.js"]
+```
+
+000 continue form part 5 - 11:00 min LEFT 0000
 
 ## A Note on Expose
 
