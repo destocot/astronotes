@@ -10,7 +10,11 @@ export default defineConfig({
         github: "https://github.com/destocot",
       },
       sidebar: [
-        { label: "MySQL", autogenerate: { directory: "mysql" } },
+        {
+          label: "MySQL",
+          autogenerate: { directory: "mysql" },
+          collapsed: true,
+        },
         {
           label: "Linux",
           autogenerate: { directory: "linux" },
