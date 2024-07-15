@@ -7,23 +7,18 @@ sidebar:
 ## Execution Order
 
 ```py
-from os import system
-system('clear')
-
-# execution order
 print('line 4') # this will be ignored
 print('line 5')
 print('line 6')
 ```
 
-- **Note**: Code is executed line by line. Lines of code that are commented out (preceded by `#`) are ignored.
+- **Note**: Code is executed line by line.
 
 ## Data Types
 
 ### Strings
 
 ```py
-# data types
 print('words') # strings
 print("words")
 ```
@@ -44,7 +39,6 @@ print(1.5) # floating point value / float
 ## Operations
 
 ```py
-# operations
 print(3 + 3)           # Addition
 print(3 - 3)           # Subtraction
 print(3 * 3)           # Multiplication
@@ -60,7 +54,6 @@ print(13 - 3 * (4 + 2)) # Order of operations: Parentheses first
 ## Variables
 
 ```py
-# variables
 test_value = 123
 test_value += 50
 print(test_value)
@@ -71,7 +64,6 @@ print(test_value)
 ## User Input
 
 ```py
-# input
 user_input = input("Please write something ")
 print(user_input)
 ```
@@ -81,11 +73,10 @@ print(user_input)
 ## Exercise: Create a Greeter App
 
 ```py
-# exercise - create a greeter app
 # 1. ask a user for their name
 # 2. print "Hello {name}, have a nice day"
 user_name = input("What is your name? ")
-print("Hello", user_name, "Have a nice day :)")
+print("Hello", user_name + ",", "have a nice day :)")
 ```
 
 - **String Concatenation**: The `print()` function can take multiple arguments, separated by commas, to concatenate strings.
@@ -93,3 +84,10 @@ print("Hello", user_name, "Have a nice day :)")
 ## Additional Tips
 
 - **Comments**: Use `#` for single-line comments to improve code readability.
+
+- **Clear Console**
+
+```py
+from os import system
+system('clear')
+```
